@@ -1,0 +1,324 @@
+---
+title: "Intro to Tidyverse"
+author: "Tonya Brunetti"
+date: "4/5/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Getting all your dependencies in order
+
+The first step is to make sure you have all your packages/libraries installed and loaded into your Rstudio environment.  You only ever need to install packages one time per R version you use per computer OS, while you have to load libraries each time a new R session is started.  In R, there are two ways to install packages since R has two main code repositories.  One is called **CRAN** and the other is called **Bioconductor**.  CRAN is the main basic R respository, while Bioconductor is where a lot of data science packages/libraries stored.  We will be using both in this tutorial.
+
+### Installing Libraries
+```
+install.packages("BiocManager", dependencies = TRUE)
+install.packages("tidyverse", dependencies = TRUE)
+```
+
+### Loading Libraries
+```{r eval=TRUE}
+    library(tidyverse)
+```
+
+
+## Your first command -- setwd()
+
+I strongly recommend setting the path to your working directory before beginning any coding.  This is the main directory your code will run from so if you have files in your working directory, you can easily access those files and directories.  By setting the working directory, R automatically inherits and fills in the beginning location with the location of your `setwd()` path command.  For example, let me set my working directory to my `Downloads` folder:
+```{r eval=FALSE}
+    setwd("/home/tonya/Downloads/")
+```
+
+You will notice as soon as you run the command, in your Console it know shows you where your Rstudio session is being run. That means if you save a file or import a file, it looks for the file in the `setwd()` location first or saves the files and images in the `setwd()` location.  You can always append to the current path if you want to search or save files elsewhere.  Sometimes you will notice the `~` symbol.  This is shorthand for your home/username directory. 
+
+![Setting a current working directory path](/home/tonya/Downloads/software/github_repos/R_tutorials/images/setwd.png)
+
+### What does setting a current working directory path mean?
+As stated, above this is the directory your current R session will look for and save files.  If you load a file from this directory, R automatically looks for the file name in the listed directory, without having to give the full path location.  Also, if you save a file, it will automatically save to this directory location.
+
+
+## Reading in a dataset
+In the tidyverse world of R, you can read in csv, Excel spreadsheets, tab-delimited text files, etc... with many simple commands:  
+
+|command     |library   |explanation                                        |return type|
+|:-----------|---------:|--------------------------------------------------:|----------:|
+|read_csv()  |readr     |read in comma-separated value text file            |     tibble|
+|read_tsv()  |readr     |read in tab-separated value text file              |     tibble|
+|read_delim()|readr     |read in a text file separated by input character   |     tibble|
+|read_xls()  |readxl    |read in Excel file                                 |     tibble|
+|read_xlsx() |readxl    |read in Excel file                                 |     tibble|
+|read_excel()|readxl    |read in Excel file                                 |     tibble|
+
+```{r eval=TRUE}
+    read_csv(file = "covid_19_clean_complete.csv")
+```
+
+Another way to do it is to specify which library the command is coming from followed by `::` :
+```{r eval=F}
+    readr::read_csv(file = "covid_19_clean_complete.csv")
+```
+
+
+As we saw previously with the dataframe, it does print some data (not all of it unlike a dataframe) to the Console screen.  However, we need to store this as a variable so we can apply functions to it.  Let's call our dataset `covidData`.
+```{r eval=TRUE}
+    covidData = readr::read_csv(file = "covid_19_clean_complete.csv", )
+```
+
+### What is the difference between a tibble and a dataframe?
+
+A tibble is basically the analagous to a dataframe in the tidyverse world.  Personally, I think tibbles are easier to view.  It have nice features that normal R dataframes do not have such as:  
+
+*  printing a tibble prints out the header and first few lines for viewing -- useful if you have large datasets
+*  the headers in a tibble let you know what type of data lives in each column
+*  tibbles have the capability to use all the tidyverse functions we are going to discuss in this tutorial
+
+For example if I run the following:
+```
+  myCOVIDtibble = read_csv(file = "covid_19_clean_complete.csv")
+  print(myCOVIDtibble)
+```  
+
+
+Now let's convert the tibble into a dataframe so we can see the difference:
+```
+  myCOVIDdf <- as.data.frame(myCOVIDtibble)
+  print(myCOVIDdf)
+```
+
+
+Similary, if you have a dataframe, you can covert it to a tibble by running the following:
+```
+   myConvertedTibble = as_tibble(myCOVIDdf)
+   print(myConvertedTibble)
+```
+
+## Selecting Columns in a Tibble -- `select()`
+
+The command to filter tibbles by rows is the `select()` command.  You can use the same `&` and `|` commands as you were doing with the dataframe, except now, select() automatically makes it easier to subset by not having long `which()` joined which commands and makes the code easy to follow!  
+
+![Using the select() command](/home/tonya/Downloads/software/github_repos/R_tutorials/images/select.png)
+
+In the dataset, let's go ahead and only select the column called `Confirmed`, which is the total number of confirmed COVID cases.
+```
+  select(covidData, Confirmed)
+```
+###  What if I want to select a range of columns to subset?
+Similar to a dataframe, you can still use the `:` symbol.  For example, let's say we want to subset our data start from the latitude `Lat` to the `Recovered` variable.  I can do that like this:
+```
+  select(covidData, Lat:Recovered)
+  select(covidData, Lat, Date, Confirmed, Recovered)
+```  
+
+### How do I subset weirdly named columns?!
+When I say "weirdly" I mean column names that have spaces or symbols, i.e. does not just contain 0-9 or A-Z values.  For example, if we try to subset `Country/Region` we are going to have a problem because '/' is a special character!  What do we do?  We had backward single quotes:
+```
+  select(covidData, `Country/Region`)
+```
+
+Same for anything with a space in the column name:  
+```
+  select(covidData, `WHO Region`)
+```
+
+Exercises  
+
+1.  What is returned when running the following code:  
+
+```
+      select(covidData, starts_with("Co"))
+```
+
+2.  What is returned when running the following code:  
+
+```
+      select(covidData, ends_with("n"))
+```
+
+3.  What is returned when running the following code:  
+
+```
+      select(covidData, contains("o"))
+```
+
+4.  What is returned when running the following code:  
+
+```
+      select(covidData, -`WHO Region`)
+```
+
+5.  What is returned when running the following code:  
+
+```
+      select(covidData, -starts_with("L"))
+```
+
+### Summary of Take Home Messages for `select()`
+
+
+## Selecting Rows in a Tibble -- `filter()`
+
+The `filter()` command is used to filter or select rows of a tibble based on an expression. Unlike the `select()` command which takes in column names to subset tibbles to certain columns, the `filter()` command takes in a expression for which the boolean returned is `TRUE`.
+
+![Using the select() command](/home/tonya/Downloads/software/github_repos/R_tutorials/images/filter.png)
+
+As an example, let's go ahead an select all rows of data where the data of occurence is 2020-01-22:
+```
+  filter(covidData, Date == "2020-01-22")
+```
+You will notice the tibble contains 261 rows of data for which the expression `Date == "2020-01-22"` is `TRUE`.  You can create much more complex expressions as well.  Let's go ahead and select all row there the total confirmed COVID cases are at least 10 and located in Europe:
+```
+  filter(covidData, (Confirmed > 10) & (`WHO Region` == "Europe"))
+```
+
+### Introducing the %in% operator
+Another useful operator in the tidyverse arena is the `%in%` operator.  If you are looking to select lots of unique values from a column, instead of writing lots of `&` and `|` commands, you can list them and use `%in%`.
+
+For example, if we wanted to select rows where the World Health Oraganization Region is the Western Pacific, Americas, and Africa. We could do it this way:
+```
+  filter(covidData, (`WHO Region` == "Western Pacific") | (`WHO Region` == "Americas") 
+  | (`WHO Region` == "Africa"))
+
+```
+&nbsp; 
+
+However using the `%in%` operator we can shorten this and make it so that if you look at your code later, it is easier to understand what you are trying to do:
+```
+  filter(covidData, `WHO Region` %in% c("Western Pacific", "Americas", "Africa"))
+```
+&nbsp; 
+
+Exercises:  
+
+1.  Using the `filter()` command, create a tibble where the the WHO Region is located in the Eastern Mediterranean or the Western Pacific and has at least 5 confirmed cases. (Hint:  the final answer should have 12,005 rows/enties)  
+&nbsp;  
+&nbsp;  
+
+
+2.  Using the `filter()` command, check which days, Alberta (in Province/State column), had at least 20 deaths (Hint:  the final answer should have 114 rows/entries).  
+&nbsp;  
+&nbsp;  
+
+3.  Using the `filter()` command find all the days in which French Guiana	(in Province/State Column) had less than 100 active cases (Active column) while also having either least 12 recovered cases or least 1000 confirmed cases.  (Hint: the final answer should have 49 rows/entries)  
+&nbsp;  
+&nbsp;  
+
+
+## Adding New Data to a Tibble -- `mutate()`
+Let's say you have a tibble, but you wanted to add additional columns with new calculations or values without overwriting anything in your current tibble.  This can easily be accomplished using the `mutate()` command.  
+
+
+![Using the mutate() command](/home/tonya/Downloads/software/github_repos/R_tutorials/images/mutate.png)
+In the `covidData` tibble we have a lot of raw values that are cumulative counts from the beginning of the year for each `Country/Region`.  The number of active cases and recovered cases don't really make sense to compare since large populations will have large values and small populations will have small values.  Instead, let's create two new columns that store those values of the percetage recovered in the population and the percentage active in the population:
+```{r eval=TRUE}
+    covidData <- mutate(covidData, percentRecovered = Recovered/Confirmed * 100, 
+                        percentActive = Active/Confirmed *100)
+```
+Notice we created two new columns: `percentRecovered` and `percentActive`.  These values will now be added as columns to the `covidData` tibble so we can use them in downstream analysis.  
+```{r eval=TRUE}
+    print(covidData)
+```
+
+
+
+## Piping and Stringing Data Commands -- the `%>%` operator
+Many times in R, you are going to want to run a lot of these commands together.  Rather than writing multiple lines of code and creating many variables that clutter your workspace, you can pipe and string commands together into one line of code.  This is acheived by using the `%>%` command -- called a pipe.  Let's look at a basic example where we combine the `select()` command and the `filter()` commands.
+
+Normally, we can do what we just learned above.  For this example, first we want all columns execpt the latitude and longitude columns and then we want to filter by only taking World Health Organization Regions that are either African or South-East Asia.  We could do this in two steps:
+```
+  ignoreLatLong = select(covidData, -c(Lat, Long))
+  cleanedSet = filter(ignoreLatLong, `WHO Region` %in% c("Africa", "South-East Asia"))
+```
+
+This same set of commands can be written in one line by running the following:
+```
+  cleanedSet <- select(covidData, -c(Lat, Long)) %>% filter(`WHO Region` %in% c("Africa", "South-East Asia"))
+```
+
+### What did the piping do?
+By using the `%>%` prior to a tidyverse command, R makes an assumption that the first arugment in each of the command is the output tibble of the previous command.  Therefore, you no longer need to specify the first argument!  You can string together as many of these as you would like.
+
+### Exercises  
+
+1.  Create a new tibble called `subsetCovid`.  Using the pipe operator write one line of code to select columns that are only `Country/Region`, `Deaths`, `Recovered`, and `Confirmed`, followed by rows where `Country/Region` is either Spain, Italy, France, or the United Kingdom. (Hint: the final tibble should have 4,512 row/entries)
+&nbsp;  
+&nbsp;  
+
+2.  Run the same one liner above, however, now add another piped command that creates a new column called `percentDeaths` calculated by taking the Deaths divided by Confirmed and multiplying by 100.
+&nbsp;  
+&nbsp;  
+
+
+
+## Visualizing Data -- `ggplot()`
+
+For many R users `ggplot()` is the go-to graphing library to generate pretty figures, graphs, and visualizations and it part of the tidyverse world.  In this section we are going to explore a few different types of ways you can plot your data.
+
+![Plotting and visualizing data using the ggplot() command](/home/tonya/Downloads/software/github_repos/R_tutorials/images/ggplot.png)
+
+
+### The options... section: Adding titles, labels, legends, plot types, themes, color palettes
+ + ggtitle("Petal and sepal length of iris")
+ + labs(y="Petal length (cm)", x = "Sepal length (cm)", color = "tesing")
+ + theme() ex: +theme(plot.title = element_text(hjust = 0.5))
+
+# box plot
+covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = Confirmed, fill = `Country/Region`)) + geom_boxplot()
+
+covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_boxplot()
+
+covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
+
+covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin() + geom_jitter()
+
+covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `Country/Region` %in% c("United Kingdom", "US", "Italy")) %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_boxplot()
+
+
+covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `Country/Region` %in% c("United Kingdom", "US", "Italy")) %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
+
+covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
+
+covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "South-East Asia") %>% ggplot(aes(x = `Country/Region`, y = Confirmed, fill = `Country/Region`)) + geom_boxplot()
+
+covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_boxplot()
+
+covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_boxplot() + geom_jitter()
+
+covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_violin()
+
+ggplot(covidData, aes(x = `WHO Region`, y = Confirmed, color = `WHO Region`)) + geom_boxplot()
+
+
+
+### Scatter plot
+covidData %>% filter(`Country/Region` == "France") %>% drop_na() %>% ggplot(aes(x = Confirmed, y = Recovered, color = `Province/State`)) + geom_point()
+covidData %>% filter(`Country/Region` == "France") %>% drop_na() %>% ggplot(aes(x = Confirmed, y = percentRecovered, color = `Province/State`, size = percentActive)) + geom_point()
+### Stacked Box plot
+# Stacked
+filter(covidData, `WHO Region` %in% c("Americas", "Europe")) %>%  ggplot(aes(fill=`Country/Region`, y=Confirmed, x=`WHO Region`)) + 
+    geom_bar(position="stack", stat="identity")
+
+
+### Time Series
+ggplot(covidData, aes(x = Date, y = Confirmed)) + 
+  geom_line(aes(color = `WHO Region`), size = 1) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800", "green", "blue", "pink", "yellow")) +
+  theme_dark()
+  
+
+ggplot(covidData, aes(x = Date, y = Confirmed)) + 
+  geom_line(aes(color = `WHO Region`), size = 1) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800", "green", "blue", "pink", "yellow")) +
+  theme_minimal() + scale_x_date(limits = c(as.Date("2020-03-01"), as.Date("2020-04-30")))
+  
+
+
+
+### Line Graph
+
+covidData %>% filter(`Country/Region` == "Spain") %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line()
+covidData %>% filter(`Country/Region` %in% c("Germany", "Portugal", "Spain")) %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line() 
+covidData %>% filter(`Country/Region` %in% c("Germany", "Portugal", "Spain")) %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line(size = 2)
