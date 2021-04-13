@@ -9,5 +9,5 @@ Dataset for can be downloaded by [clicking here](https://www.kaggle.com/imdevskp
 	go to datasets folder and download
 
 # Resources
-[R for Data Science Full Book & Free!](https://r4ds.had.co.nz/index.html)
-[ggplot graphing gallery](https://www.r-graph-gallery.com/index.html)
+*  [R for Data Science Full Book & Free!](https://r4ds.had.co.nz/index.html)  
+*  [ggplot graphing gallery](https://www.r-graph-gallery.com/index.html)
