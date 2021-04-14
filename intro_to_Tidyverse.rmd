@@ -15,12 +15,15 @@ knitr::opts_chunk$set(echo = TRUE)
 The first step is to make sure you have all your packages/libraries installed and loaded into your Rstudio environment.  You only ever need to install packages one time per R version you use per computer OS, while you have to load libraries each time a new R session is started.  In R, there are two ways to install packages since R has two main code repositories.  One is called **CRAN** and the other is called **Bioconductor**.  CRAN is the main basic R respository, while Bioconductor is where a lot of data science packages/libraries stored.  We will be using both in this tutorial.
 
 ### Installing Libraries
+To install packages that are located in the **CRAN** repository, you can use the `install.packages()` command.  You will notice I have set an extra parameter `dependencies = TRUE`.  This means if the package you are installing requires other R software packages that are not already installed, R will automatically install them, if possible.
 ```
 install.packages("BiocManager", dependencies = TRUE)
 install.packages("tidyverse", dependencies = TRUE)
 ```
+Although not used in this tutorial, if you have a to install a package that is located in the **Bioconductor** repository, you can use `BiocManager::install()` instead of `install.packages()`.
 
 ### Loading Libraries
+In order to load an installed package into your current Rstudio environment, you use the `library()` command.  This needs to be done anytime you open a new Rstudio session or anytime you restart your Rstudio session.  You only need to load in the the packages you will be using commands from.
 ```{r eval=TRUE}
     library(tidyverse)
 ```
@@ -65,7 +68,7 @@ Another way to do it is to specify which library the command is coming from foll
 
 As we saw previously with the dataframe, it does print some data (not all of it unlike a dataframe) to the Console screen.  However, we need to store this as a variable so we can apply functions to it.  Let's call our dataset `covidData`.
 ```{r eval=TRUE}
-    covidData = readr::read_csv(file = "covid_19_clean_complete.csv", )
+    covidData = readr::read_csv(file = "covid_19_clean_complete.csv")
 ```
 
 ### What is the difference between a tibble and a dataframe?
@@ -123,6 +126,7 @@ Same for anything with a space in the column name:
 ```
   select(covidData, `WHO Region`)
 ```
+&nbsp;  
 
 Exercises  
 
@@ -131,32 +135,40 @@ Exercises
 ```
       select(covidData, starts_with("Co"))
 ```
+&nbsp;  
+&nbsp;  
 
 2.  What is returned when running the following code:  
 
 ```
       select(covidData, ends_with("n"))
 ```
+&nbsp;  
+&nbsp;  
 
 3.  What is returned when running the following code:  
 
 ```
       select(covidData, contains("o"))
 ```
+&nbsp;  
+&nbsp;  
 
 4.  What is returned when running the following code:  
 
 ```
       select(covidData, -`WHO Region`)
 ```
+&nbsp;  
+&nbsp;  
 
 5.  What is returned when running the following code:  
 
 ```
       select(covidData, -starts_with("L"))
 ```
-
-### Summary of Take Home Messages for `select()`
+&nbsp;  
+&nbsp;  
 
 
 ## Selecting Rows in a Tibble -- `filter()`
@@ -169,10 +181,13 @@ As an example, let's go ahead an select all rows of data where the data of occur
 ```
   filter(covidData, Date == "2020-01-22")
 ```
+&nbsp;  
+
 You will notice the tibble contains 261 rows of data for which the expression `Date == "2020-01-22"` is `TRUE`.  You can create much more complex expressions as well.  Let's go ahead and select all row there the total confirmed COVID cases are at least 10 and located in Europe:
 ```
   filter(covidData, (Confirmed > 10) & (`WHO Region` == "Europe"))
 ```
+&nbsp;  
 
 ### Introducing the %in% operator
 Another useful operator in the tidyverse arena is the `%in%` operator.  If you are looking to select lots of unique values from a column, instead of writing lots of `&` and `|` commands, you can list them and use `%in%`.
@@ -217,11 +232,14 @@ In the `covidData` tibble we have a lot of raw values that are cumulative counts
     covidData <- mutate(covidData, percentRecovered = Recovered/Confirmed * 100, 
                         percentActive = Active/Confirmed *100)
 ```
+&nbsp;  
+
 Notice we created two new columns: `percentRecovered` and `percentActive`.  These values will now be added as columns to the `covidData` tibble so we can use them in downstream analysis.  
 ```{r eval=TRUE}
     print(covidData)
 ```
-
+&nbsp;  
+&nbsp;  
 
 
 ## Piping and Stringing Data Commands -- the `%>%` operator
@@ -232,14 +250,17 @@ Normally, we can do what we just learned above.  For this example, first we want
   ignoreLatLong = select(covidData, -c(Lat, Long))
   cleanedSet = filter(ignoreLatLong, `WHO Region` %in% c("Africa", "South-East Asia"))
 ```
+&nbsp;  
 
 This same set of commands can be written in one line by running the following:
 ```
   cleanedSet <- select(covidData, -c(Lat, Long)) %>% filter(`WHO Region` %in% c("Africa", "South-East Asia"))
 ```
+&nbsp;  
 
 ### What did the piping do?
 By using the `%>%` prior to a tidyverse command, R makes an assumption that the first arugment in each of the command is the output tibble of the previous command.  Therefore, you no longer need to specify the first argument!  You can string together as many of these as you would like.
+&nbsp;  
 
 ### Exercises  
 
@@ -259,66 +280,129 @@ For many R users `ggplot()` is the go-to graphing library to generate pretty fig
 
 ![Plotting and visualizing data using the ggplot() command](/home/tonya/Downloads/software/github_repos/R_tutorials/images/ggplot.png)
 
+### The `options...` section: Types of Graphs  
 
-### The options... section: Adding titles, labels, legends, plot types, themes, color palettes
- + ggtitle("Petal and sepal length of iris")
- + labs(y="Petal length (cm)", x = "Sepal length (cm)", color = "tesing")
- + theme() ex: +theme(plot.title = element_text(hjust = 0.5))
+These are just some of the basic graph types you can create using `ggplot`.  There are many other add on packages you can install and use with ggplot to generate heatmaps, correlations plots, maps, etc...  Some that may be of interest.  One that many scientists use it the `heatmap()` function.  This is a ggplot type, however, it doesn't follow the same `ggplot()` command structure, so just be sure to look up how to use these special use cases.  
 
-# box plot
-covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = Confirmed, fill = `Country/Region`)) + geom_boxplot()
-
-covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_boxplot()
-
-covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
-
-covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin() + geom_jitter()
-
-covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `Country/Region` %in% c("United Kingdom", "US", "Italy")) %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_boxplot()
-
-
-covidData %>% filter(Date >= "2020-04-01" & Date <= "2020-04-30" & `Country/Region` %in% c("United Kingdom", "US", "Italy")) %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
-
-covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `WHO Region` == "Western Pacific") %>% ggplot(aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + geom_violin()
-
-covidData %>% filter(Date >= "2020-05-01" & Date <= "2020-05-31" & `WHO Region` == "South-East Asia") %>% ggplot(aes(x = `Country/Region`, y = Confirmed, fill = `Country/Region`)) + geom_boxplot()
-
-covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_boxplot()
-
-covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_boxplot() + geom_jitter()
-
-covidData %>% filter(Date >= "2020-07-01" & Date <= "2020-07-30" & `Country/Region` == "Australia") %>% drop_na() %>% ggplot(aes(x = `Province/State`, y = Confirmed, fill = `Province/State`)) + geom_violin()
-
-ggplot(covidData, aes(x = `WHO Region`, y = Confirmed, color = `WHO Region`)) + geom_boxplot()
+|command           |explanation            |
+|:-----------------|----------------------:|
+|+ geom_point()    |scatter plot           |
+|+ geom_jitter()   |jitter plot            | 
+|+ geom_bar()      |bar plot               |
+|+ geom_boxplot()  |boxplot                |
+|+ geom_violin()   |violin plot            |
+|+ geom_histogram()|histogram              |
+|+ geom_density()  |kernel density plot    |
+|+ geom_dotplot()  |dot plot               |
+|+ geom_line()     |line plot              |
 
 
 
-### Scatter plot
-covidData %>% filter(`Country/Region` == "France") %>% drop_na() %>% ggplot(aes(x = Confirmed, y = Recovered, color = `Province/State`)) + geom_point()
-covidData %>% filter(`Country/Region` == "France") %>% drop_na() %>% ggplot(aes(x = Confirmed, y = percentRecovered, color = `Province/State`, size = percentActive)) + geom_point()
-### Stacked Box plot
-# Stacked
-filter(covidData, `WHO Region` %in% c("Americas", "Europe")) %>%  ggplot(aes(fill=`Country/Region`, y=Confirmed, x=`WHO Region`)) + 
-    geom_bar(position="stack", stat="identity")
+### The `options...` section: Adding titles, labels, legends, plot types, themes, color palettes
+These are some basic command commands you can add to your `ggplot()` commands to change colors, themes, and add titles/annotations.  
 
+|command                                       |explanation                                        |
+|:---------------------------------------------|--------------------------------------------------:|
+|+ ggtitle("Title of Your Graph")              |add title to your ggplot                           |
+|+ labs(y="y-axis label", x = "x-axis label")  |add labels to x and y axis                         | 
+|+ theme()                                     |ex: +theme(plot.title = element_text(hjust = 0.5)) |
+|+ scale_color_manual(values=c("#999999"))     |provide a list of color manual colors to set points|
+|+ scale_color_brewer(palette="Dark2")         |palette is a set of prefined color palettes in R   |
+|+ scale_color_gradient(low="blue", high="red")|autoscale color gradient                           |
+|+ scale_fill_manual(values=c("#999999"))      |fill values manually for boxplots and barplots     |
+|+ scale_color_grey()                          |color points to be greyscale                       |
 
-### Time Series
+### Example: Boxplot
+Let's work through a simple boxplot example.  First, let's subset the data we want to graph.  In this case, let's filter the data so that it only selects data for the full month of April of 2020 and are located in the Western Pacific.  
+
+```{r eval=TRUE}
+  newData = filter(covidData, Date >= "2020-04-01" & Date <= "2020-04-30" 
+                   & `WHO Region` == "Western Pacific")
+```
+Now, let's use ggplot to create a boxplot with the `Country/Region` plotted on the x-axis and the `percentRecovered` plotted on the y-axis:
+
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot()
+```
+
+Hmmm, those x-axis labels are hard to read.  Can we rotate them?  Yes! Using `theme()` using `axis.text.x` keyword:
+ 
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + theme(axis.text.x = element_text(angle = 45))
+```
+
+Blah!  Now the text is invading the plot space.  How can we fix it?
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+Let's go ahead and now add a title and change the x and y axis labels. You will notice many of these keywords in `theme()` have `hjust` and `vjust` paramters.  The are the horizontal and vertical adjustments.  Notice for the title, we have `hjust=0.5` meaning the title will be in the center.
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + ggtitle("Per day recovered by Country in April") + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1),
+    plot.title = element_text(hjust = 0.5)) + 
+    labs(x="Country", y="% recovered")
+                           
+```
+
+Now let's see if we can change the color scheme:
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + ggtitle("Per day recovered by Country in April") + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1),
+    plot.title = element_text(hjust = 0.5)) + 
+    labs(x="Country", y="% recovered") + scale_fill_grey()
+```
+
+Now let's see if we can change the color scheme using a predefined palette in R:
+```{r eval=TRUE}
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + ggtitle("Per day recovered by Country in April") + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1),
+    plot.title = element_text(hjust = 0.5)) + 
+    labs(x="Country", y="% recovered") + scale_fill_brewer(palette="Dark2") 
+```
+You will notice a lot of empty boxplots, and that is because if you use a predefined palette and there are fewer colors than there are categories, it runs out of colors to use.
+&nbsp;  
+&nbsp; 
+
+### `ggplot()` as a single piped command (Advanced)
+Since `ggplot()` follows the same tidyverse format of the first argument always being a tibble, you can actually pipe all of you data into a single long command if you choose.  This would look something like this:
+```
+  filter(covidData, Date >= "2020-04-01" & Date <= "2020-04-30" 
+                   & `WHO Region` == "Western Pacific") %>%
+  ggplot(newData, aes(x = `Country/Region`, y = percentRecovered, fill = `Country/Region`)) + 
+    geom_boxplot() + ggtitle("Per day recovered by Country in April") + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1),
+    plot.title = element_text(hjust = 0.5)) + 
+    labs(x="Country", y="% recovered")
+```
+
+### Example: Time Series
+Just so we can see and example of how the tidyverse world handle the data type class called `Date`, here is an example of telling `ggplot()` to take our original data and plot `Date` on the x-axis and the total `Confirmed` cases on the y-axis and break down the colors by their World Health Organization classifications:
+```{r eval=TRUE}
 ggplot(covidData, aes(x = Date, y = Confirmed)) + 
   geom_line(aes(color = `WHO Region`), size = 1) +
   scale_color_manual(values = c("#00AFBB", "#E7B800", "green", "blue", "pink", "yellow")) +
-  theme_dark()
-  
+  theme_minimal() + scale_x_date(limits = c(as.Date("2020-03-01"), as.Date("2020-07-30")))
+```
 
-ggplot(covidData, aes(x = Date, y = Confirmed)) + 
-  geom_line(aes(color = `WHO Region`), size = 1) +
-  scale_color_manual(values = c("#00AFBB", "#E7B800", "green", "blue", "pink", "yellow")) +
-  theme_minimal() + scale_x_date(limits = c(as.Date("2020-03-01"), as.Date("2020-04-30")))
-  
+In the example above, you can see we introduce a new `ggplot()` option called `scale_x_date`, which allows you to plot the date between bounds.  In my opinion, I would avoid this and just prefilter your dataset to include the date you wants, and then you never have to use this new command.
 
+### Excerises:  
 
+1.  Create a scatter plot, where you first filter the data to only selet the `Country/Region` to be France.  Then plot the Confirmed cases along the x-axis, the percent recovered on the y-axis, and the color to be set to the `Province/State`.
+&nbsp;  
+&nbsp;  
 
-### Line Graph
+2.  In the time series example above, add a title and center it along the top.  Additionally change the y-axis label to read, "Total Confirmed Cases".
+&nbsp;  
+&nbsp;  
 
-covidData %>% filter(`Country/Region` == "Spain") %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line()
-covidData %>% filter(`Country/Region` %in% c("Germany", "Portugal", "Spain")) %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line() 
-covidData %>% filter(`Country/Region` %in% c("Germany", "Portugal", "Spain")) %>% ggplot(aes(x = Date, y = percentRecovered, color = `Country/Region`)) + geom_line(size = 2)
+3.  Run the boxplot code from an above example, except add an additional option to the end `+ geom_jitter()`.  What changes?
+&nbsp;  
+&nbsp;  
